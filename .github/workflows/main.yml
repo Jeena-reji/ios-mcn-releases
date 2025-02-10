@@ -17,18 +17,26 @@ jobs:
       - name: Clone ios-mcn-releases Repository
         run: |
           git clone https://github.com/Jeena-reji/ios-mcn-releases.git
-          ls -R ios-mcn-releases  # Debugging step to check files
+          ls -R ios-mcn-releases  # Debugging: List all files to check paths
           cp ios-mcn-releases/Agartala/v0.1.0/SMO/source-code/iosmcn.agartala.v0.1.0.smo.source.tar.gz .
 
       - name: Extract Source Code
         run: |
           tar -xvzf iosmcn.agartala.v0.1.0.smo.source.tar.gz
           cd iosmcn.agartala.v0.1.0.smo.source
+          ls -R  # Debugging: Check extracted files
           tar -xvzf oam-0.0.2.iosmcn.smo.oam.tar.gz
+          cd oam-0.0.2.iosmcn.smo.oam
+          ls -R  # Debugging: Check if scripts exist
 
       - name: Deploy OAM
         run: |
           cd iosmcn.agartala.v0.1.0.smo.source/oam-0.0.2.iosmcn.smo.oam
-          chmod +x adapt-to-environment.py docker-setup.sh
-          python3 adapt-to-environment.py --i ${{ secrets.SYSTEM_IP }} --d ${{ secrets.DOMAIN_NAME }}
-          ./docker-setup.sh
+          if [ -f "adapt-to-environment.py" ] && [ -f "docker-setup.sh" ]; then
+            chmod +x adapt-to-environment.py docker-setup.sh
+            python3 adapt-to-environment.py --i ${{ secrets.SYSTEM_IP }} --d ${{ secrets.DOMAIN_NAME }}
+            ./docker-setup.sh
+          else
+            echo "❌ ERROR: Required files not found!"
+            exit 1
+          fi
