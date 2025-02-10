@@ -3,9 +3,13 @@ name: Deploy OAM
 on:
   workflow_dispatch:  # Manual trigger
 
+permissions:
+  contents: read  # Allows checking out the repository
+
 jobs:
   deploy_oam:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout OAM Repository
         uses: actions/checkout@v4  # Check out OAM repo
@@ -13,8 +17,10 @@ jobs:
       - name: Clone ios-mcn-releases Repository
         run: |
           git clone https://github.com/Jeena-reji/ios-mcn-releases.git
-          cp ios-mcn-releases/iosmcn.agartala.v0.1.0.smo.source.tar.gz .
-      
+          cd ios-mcn-releases
+          cp iosmcn.agartala.v0.1.0.smo.source.tar.gz ..
+          cd ..
+
       - name: Extract Source Code
         run: |
           tar -xvzf iosmcn.agartala.v0.1.0.smo.source.tar.gz
@@ -24,5 +30,6 @@ jobs:
       - name: Deploy OAM
         run: |
           cd iosmcn.agartala.v0.1.0.smo.source/oam-0.0.2.iosmcn.smo.oam
+          chmod +x adapt-to-environment.py docker-setup.sh
           python3 adapt-to-environment.py --i ${{ secrets.SYSTEM_IP }} --d ${{ secrets.DOMAIN_NAME }}
           ./docker-setup.sh
